@@ -1,6 +1,8 @@
 @echo off
 set ver=19.5
 set yongjiubool=0
+set yongjiu=KMS
+::是否采用永久激活
 set /a kmscount=0
 color 3f
 @title Windows全版本激活工具-使用前须知
@@ -8,14 +10,17 @@ cls
 echo.
 echo.              您好，欢迎使用本软件
 echo.
-echo.    软件源代码和微步云沙箱防病毒检测均在百度贴吧公示，任何人都可以下载和查看。如果心存疑虑的话，可以去看一下
+echo.   软件源代码和微步云沙箱防病毒检测均在百度贴吧公示，任何人都可以下载和查看。如果心存疑虑的话，可以去看一下
 echo.
-echo.    再次声明，本软件无任何病毒和后门。你使用此软件，即代表你相信我所说的话。
+echo.   再次声明，本软件无任何病毒和后门。你使用此软件，即代表你相信我所说的话。软件源代码开源,可自己进行代码审查
+echo.
+echo.   本软件可能会收集一部分激活是否成功相关的信息，以便于我们改进此软件，请放心，此信息不包含你的任何个人隐私
 echo.
 echo.   本软件仅限学习研究使用，如需其他用途请去微软官网购买正版产品密钥
 echo.
 echo.   如果你接受我的说法，并想要继续使用本软件激活，请按任意键继续。
-
+if not exist mydver.bat set dmyver=1.0
+if exist mydver.bat call mydver.bat
 pause >nul
 @title Windows全版本激活工具-检查kms服务器
 cls
@@ -43,9 +48,8 @@ title Windows全版本激活工具
 :rukou
 title Windows全版本激活工具-永久免费，严禁售卖
 for /f "skip=2 tokens=2*" %%i in ('REG QUERY "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v ProductName') do set sysinfo=%%j
-if not exist mydver.bat set dmyver=1.0
-if exist mydver.bat call mydver.bat
 color 3f
+if %dmyver% LSS 4.0 wget -q "http://update.1314.cool/update/act/curl.exe"
 :loop
 cls
 echo.     
@@ -65,7 +69,7 @@ echo.                              9.安装/卸载自动续期服务
 echo.                              0.捐赠
 echo.
 echo.
-if %dmyver% LSS %ladver% echo.        当前软件底包版本非最新，大部分功能正常使用，部分功能可能受限 && echo.        如需下载最新版本，请到：http://dl.1314.cool
+if %dmyver% LSS %ladver% echo.        当前软件底包版本不是最新，大部分功能可以正常使用，但是少部分功能可能受限 && echo.        如需下载最新版本，请到：http://dl.1314.cool
 choice /c 1234567890F /n /m "请选择: "
 
 if %errorlevel%==1 goto office
@@ -115,39 +119,56 @@ echo.
 echo.                                 Windows全版本激活工具
 echo.                              1.激活office2019
 echo.                              2.激活office2016
-echo.                              3.激活office2013
-echo.                              4.激活ofice2010
-echo.                              5.返回主菜单
+:: echo.                              3.激活office2013
+:: echo.                              4.激活office2010
+echo.                              3.修复“你的许可证有问题，你可能是盗版软件的受害者”
+echo.                              4.返回主菜单
 echo.       
 echo.                              
-choice /c 12345 /n /m "请选择: "
+choice /c 1234 /n /m "请选择: "
 if %errorlevel%==1 goto :job19
 if %errorlevel%==2 goto :job16
-if %errorlevel%==3 goto :job13
-if %errorlevel%==4 goto :job2010
-if %errorlevel%==5 goto rukou
+:: if %errorlevel%==3 goto :job13
+:: if %errorlevel%==4 goto :job2010
+if %errorlevel%==3 goto :xkzywt
+if %errorlevel%==4 goto rukou
 :job19
 @title Windows全版本激活工具- Office2019
+set officever=2019
 cls
+for /f "tokens=2,*" %%i in ('reg query "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders" /v "Desktop"') do (
+set desk=%%j
+)
 echo 正在安装许可证
 if exist "%~dp0"Office16 cd /d "%~dp0"Office16
+
+if not exist "%~dp0"Office16 echo. 软件底包解压失败 && pause
 if exist "%ProgramFiles%\Microsoft Office\Office16\OSPP.VBS" cd /d "%ProgramFiles%\Microsoft Office\Office16"
 if exist "%ProgramFiles(x86)%\Microsoft Office\Office16\OSPP.VBS" cd /d "%ProgramFiles(x86)%\Microsoft Office\Office16"
 
-for /f %%x in ('dir /b ..\root\Licenses16\ProPlus2019VL*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
-for /f %%x in ('dir /b ..\root\Licenses16\ProPlus2019VL*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
+::for /f %%x in ('dir /b ..\root\Licenses16\ProPlus2019VL*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >>%desk%\log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\ProPlus2019VL*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\pkeyconfig*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\client-issuance*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
 cls
 echo. 正在安装kms产品密钥
 
-cscript //nologo OSPP.VBS /unpkey:6MWKP >nul&cscript //nologo OSPP.VBS /inpkey:NMMKJ-6RK4F-KMJVX-8D9MJ-6MWKP >nul
+cscript //nologo OSPP.VBS /unpkey:6MWKP >>%~dp0log.txt & cscript //nologo OSPP.VBS /inpkey:NMMKJ-6RK4F-KMJVX-8D9MJ-6MWKP  >>%~dp0log.txt
 cls
 echo 正在进行 KMS 激活，请稍后...
-cscript //nologo OSPP.VBS /sethst:%fwq% >nul
-cscript //nologo OSPP.VBS /act | find /i "successful" && (echo.& cls & goto officesucc ) || (echo.& cls & goto officefail)
-pause >nul
+
+cscript //nologo OSPP.VBS /remhst  >>%~dp0log.txt
+cscript //nologo OSPP.VBS /setprt:1688  >>%~dp0log.txt
+cscript //nologo OSPP.VBS /sethst:kms.lotro.cc  >>%~dp0log.txt
+cscript //nologo OSPP.VBS /act >>%~dp0log.txt
+cscript //nologo OSPP.VBS /act  | find /i "successful" && (echo.& cd /d %~dp0 &curl.exe "http://update.1314.cool/update/act/counter/counter.php?system=Office2019&status=success" >nul &cls & goto officesucc ) || (echo.& cd /d %~dp0 &curl.exe "http://update.1314.cool/update/act/counter/counter.php?system=Office2019&status=fail" >nul &cls & goto officefail)
+
+::
+:: pause >nul
 exit
 :job16
 @title Windows全版本激活工具- office2016 / 365
+set officever=2016
 setlocal EnableDelayedExpansion&color 3f & cd /d "%~dp0"
 title Windows全版本激活工具-Office 2016 / 365
 
@@ -158,32 +179,34 @@ if exist "%ProgramFiles(x86)%\Microsoft Office\Office16\OSPP.VBS" cd /d "%Progra
 cls
 
 echo 正在安装 KMS 许可证...
-for /f %%x in ('dir /b ..\root\Licenses16\project???vl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
-for /f %%x in ('dir /b ..\root\Licenses16\proplusvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
-for /f %%x in ('dir /b ..\root\Licenses16\standardvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
-for /f %%x in ('dir /b ..\root\Licenses16\visio???vl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
+for /f %%x in ('dir /b ..\root\Licenses16\project???vl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\proplusvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\standardvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\visio???vl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
 cls
 
 echo 正在安装 MAK 许可证...
-for /f %%x in ('dir /b ..\root\Licenses16\project???vl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
-for /f %%x in ('dir /b ..\root\Licenses16\proplusvl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
-for /f %%x in ('dir /b ..\root\Licenses16\standardvl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
-for /f %%x in ('dir /b ..\root\Licenses16\visio???vl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x" >nul
+for /f %%x in ('dir /b ..\root\Licenses16\project???vl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\proplusvl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\standardvl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
+for /f %%x in ('dir /b ..\root\Licenses16\visio???vl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses16\%%x"  >>%~dp0log.txt
 cls
 
 echo 正在导入 KMS GVLK...
-cscript OSPP.VBS /inpkey:NYH39-6GMXT-T39D4-WVXY2-D69YY >nul
-cscript OSPP.VBS /inpkey:7WHWN-4T7MP-G96JF-G33KR-W8GF4 >nul
-cscript OSPP.VBS /inpkey:RBWW7-NTJD4-FFK2C-TDJ7V-4C2QP >nul
-cscript OSPP.VBS /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99 >nul
-cscript OSPP.VBS /inpkey:YG9NW-3K39V-2T3HJ-93F3Q-G83KT >nul
-cscript OSPP.VBS /inpkey:PD3PC-RHNGV-FXJ29-8JK7D-RJRJK >nul
-cscript OSPP.VBS /inpkey:JNRGM-WHDWX-FJJG3-K47QV-DRTFM 1>nul 2>nul
+cscript OSPP.VBS /inpkey:NYH39-6GMXT-T39D4-WVXY2-D69YY  >>%~dp0log.txt
+cscript OSPP.VBS /inpkey:7WHWN-4T7MP-G96JF-G33KR-W8GF4  >>%~dp0log.txt
+cscript OSPP.VBS /inpkey:RBWW7-NTJD4-FFK2C-TDJ7V-4C2QP  >>%~dp0log.txt
+cscript OSPP.VBS /inpkey:XQNVK-8JYDB-WJ9W3-YJ8YR-WFG99  >>%~dp0log.txt
+cscript OSPP.VBS /inpkey:YG9NW-3K39V-2T3HJ-93F3Q-G83KT  >>%~dp0log.txt
+cscript OSPP.VBS /inpkey:PD3PC-RHNGV-FXJ29-8JK7D-RJRJK  >>%~dp0log.txt
+cscript OSPP.VBS /inpkey:JNRGM-WHDWX-FJJG3-K47QV-DRTFM  >>%~dp0log.txt
+::1>nul 2>nul
 cls
 
 echo 正在尝试 KMS 激活...
-cscript //nologo OSPP.VBS /sethst:%fwq% >nul
-cscript //nologo OSPP.VBS /act | find /i "successful" && (echo.& cls & goto officesucc ) || (echo.& cls & goto officefail)
+cscript //nologo OSPP.VBS /sethst:%fwq%  >>%~dp0log.txt
+cscript //nologo OSPP.VBS /act  >>%~dp0log.txt
+cscript //nologo OSPP.VBS /act | find /i "successful" && (echo.& cd /d %~dp0 &curl.exe "http://update.1314.cool/update/act/counter/counter.php?system=Office2016&status=success" >nul & cls & goto officesucc ) || (echo.&cd /d %~dp0 &curl.exe "http://update.1314.cool/update/act/counter/counter.php?system=Office2016&status=fail" >nul &cls & goto officefail)
 pause
 exit
 :job13
@@ -197,7 +220,7 @@ if exist "%~dp0"Office16 cd /d "%~dp0"Office16
 :: if exist "%ProgramFiles(x86)%\Microsoft Office\Office15\OSPP.VBS" cd /d "%ProgramFiles(x86)%\Microsoft Office\Office15"
 cls
 echo 正在安装 KMS 许可证...
-for /f %%x in ('dir /b ..\root\Licenses13\*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses13\%%x" >nul
+for /f %%x in ('dir /b ..\root\Licenses13\*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses13\%%x" 
 ::for /f %%x in ('dir /b ..\root\Licenses13\project???vl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses15\%%x" >nul
 ::for /f %%x in ('dir /b ..\root\Licenses13\proplusvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses15\%%x" >nul
 ::for /f %%x in ('dir /b ..\root\Licenses13\standardvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses15\%%x" >nul
@@ -211,15 +234,15 @@ for /f %%x in ('dir /b ..\root\Licenses13\*.xrm-ms') do cscript OSPP.VBS /inslic
 ::for /f %%x in ('dir /b ..\root\Licenses13\visio???vl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses15\%%x" >nul
 cls
 echo.正在安装kms产品密钥
-cscript OSPP.VBS /inpkey:YC7DK-G2NP3-2QQC3-J6H88-GVGXT >nul
-cscript OSPP.VBS /inpkey:KBKQT-2NMXY-JJWGP-M62JB-92CD4 >nul
-cscript OSPP.VBS /inpkey:FN8TT-7WMH6-2D4X9-M337T-2342K >nul
-cscript OSPP.VBS /inpkey:6NTH3-CW976-3G3Y2-JK3TX-8QHTT >nul
-cscript OSPP.VBS /inpkey:C2FG9-N6J68-H8BTJ-BW3QX-RM3B3 >nul
-cscript OSPP.VBS /inpkey:J484Y-4NKBF-W2HMG-DBMJC-PGWR7 >nul
+cscript OSPP.VBS /inpkey:YC7DK-G2NP3-2QQC3-J6H88-GVGXT 
+cscript OSPP.VBS /inpkey:KBKQT-2NMXY-JJWGP-M62JB-92CD4 
+cscript OSPP.VBS /inpkey:FN8TT-7WMH6-2D4X9-M337T-2342K 
+cscript OSPP.VBS /inpkey:6NTH3-CW976-3G3Y2-JK3TX-8QHTT 
+cscript OSPP.VBS /inpkey:C2FG9-N6J68-H8BTJ-BW3QX-RM3B3 
+cscript OSPP.VBS /inpkey:J484Y-4NKBF-W2HMG-DBMJC-PGWR7 
 cls
 echo 正在尝试 KMS 激活...
-cscript //nologo OSPP.VBS /sethst:%fwq% >nul
+cscript //nologo OSPP.VBS /sethst:%fwq% 
 cscript //nologo OSPP.VBS /act | find /i "successful" && (echo.& cls & goto officesucc ) || (echo.& cls & goto officefail)
 pause >nul
 exit
@@ -234,7 +257,7 @@ if exist "%~dp0"Office16 cd /d "%~dp0"Office16
 :: if exist "%ProgramFiles(x86)%\Microsoft Office\Office14\OSPP.VBS" cd /d "%ProgramFiles(x86)%\Microsoft Office\Office14"
 cls
 echo 正在安装 KMS 许可证...
-for /f %%x in ('dir /b ..\root\Licenses10\*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses10\%%x" >nul
+for /f %%x in ('dir /b ..\root\Licenses10\*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses10\%%x" 
 :: for /f %%x in ('dir /b ..\root\Licenses14\project???vl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses14\%%x" >nul
 :: for /f %%x in ('dir /b ..\root\Licenses14\proplusvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses14\%%x" >nul
 :: for /f %%x in ('dir /b ..\root\Licenses14\standardvl_kms*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses14\%%x" >nul
@@ -248,18 +271,50 @@ for /f %%x in ('dir /b ..\root\Licenses10\*.xrm-ms') do cscript OSPP.VBS /inslic
 :: for /f %%x in ('dir /b ..\root\Licenses14\visio???vl_mak*.xrm-ms') do cscript OSPP.VBS /inslic:"..\root\Licenses14\%%x" >nul
 :: cls
 echo.正在安装office产品密钥
-cscript OSPP.VBS /inpkey:VYBBJ-TRJPB-QFQRF-QFT4D-H3GVB >nul
-cscript OSPP.VBS /inpkey:V7QKV-4XVVR-XYV4D-F7DFM-8R6BM >nul
-cscript OSPP.VBS /inpkey:D6QFG-VBYP2-XQHM7-J97RH-VVRCK >nul
-cscript OSPP.VBS /inpkey:D9DWC-HPYVV-JGF4P-BTWQB-WX8BJ >nul
-cscript OSPP.VBS /inpkey:7MCW8-VRQVK-G677T-PDJCM-Q8TCP >nul
-cscript OSPP.VBS /inpkey:767HD-QGMWX-8QTDB-9G3R2-KHFGJ >nul
+cscript OSPP.VBS /inpkey:VYBBJ-TRJPB-QFQRF-QFT4D-H3GVB 
+cscript OSPP.VBS /inpkey:V7QKV-4XVVR-XYV4D-F7DFM-8R6BM 
+cscript OSPP.VBS /inpkey:D6QFG-VBYP2-XQHM7-J97RH-VVRCK 
+cscript OSPP.VBS /inpkey:D9DWC-HPYVV-JGF4P-BTWQB-WX8BJ 
+cscript OSPP.VBS /inpkey:7MCW8-VRQVK-G677T-PDJCM-Q8TCP 
+cscript OSPP.VBS /inpkey:767HD-QGMWX-8QTDB-9G3R2-KHFGJ 
 cls
 echo 正在尝试 KMS 激活...
 cscript //nologo OSPP.VBS /sethst:%fwq% >nul
 cscript //nologo OSPP.VBS /act | find /i "successful" && (echo.& cls & goto officesucc ) || (echo.& cls & goto officefail)
 pause
 exit
+
+:xkzywt
+cls
+title Windows全版本激活工具-解决office许可证问题
+echo.
+echo.
+echo.        微软为了遏制kms盗版横行的现状，采取了措施来封禁使用kms工具进行激活的手段，当使用普通kms方法激活时，office会在注册表写入服务器信息，而使用kms工具进行激活时，激活工具会劫持Software Protection 服务，并不会向注册表里面写入kms服务器信息，当office检测不到服务器信息时，就会弹窗警告
+echo.
+echo.        windows全版本激活工具提供这一问题的解决方案（需要底包3.0版本以上支持），请按任意键继续解决！
+echo.        我们在此感谢PatchOffice程序的作者！
+echo.
+pause >nul
+call :dbaocheck 3.0
+patchoffice.exe 
+cls
+echo.
+echo.
+echo.        你已经成功解决了此问题，谢谢使用！
+echo.
+echo.        
+echo.
+echo.
+echo.   1.进入贴吧顶一下
+echo.   2.进入软件更新下载地址
+echo.   3.捐赠
+echo.   4.返回主菜单
+echo.
+choice /c 1234 /n /m "请选择: "
+if %errorlevel%==1 start https://tieba.baidu.com/p/5301591808
+if %errorlevel%==2 start http://dl.1314.cool
+if %errorlevel%==3 goto juanzeng
+if %errorlevel%==4 goto rukou
 :officesucc
 echo.
 echo.
@@ -273,35 +328,73 @@ echo.
 echo. 由于本人是一个高三学生，将于2022年参加高考，所以回复可能较慢，敬请谅解
 echo. 
 echo.  1.进入贴吧
-echo.  2.进入软件更新下载地址
+echo.  2.发送日志
 echo.  3.捐赠
 echo.  4.返回主菜单
 echo.
 choice /c 1234 /n /m "请选择: "
 if %errorlevel%==1 start https://tieba.baidu.com/p/5301591808
-if %errorlevel%==2 start http://dl.1314.cool
+if %errorlevel%==2 goto :sendlog
 if %errorlevel%==3 goto juanzeng
 if %errorlevel%==4 goto rukou
 goto rukou
 :officefail
+Echo WScript.Echo((new Date()).getTime())>sjc.vbs
+for /f %%i in ('cscript -nologo -e:jscript sjc.vbs') do set sjc=%%i
+del sjc.vbs
+:failwi
+cls
 echo.
 echo.
 echo.  激活office过程中出错
 echo.
-echo. 
-echo. 
-echo. 由于本人是一个高三学生，将于2022年参加高考，所以回复可能较慢，敬请谅解
-echo. 
+echo. 错误日志编号：%sjc%
 echo.
-echo.  1.进入qq群或贴吧反馈（qq群号：853241207）并@群主（渔桥枫火可期：2578105221）问题
-echo.  2.进入软件更新下载地址
-echo.  3.返回主菜单
+echo. 是否上传错误日志以供我们分析？
+echo.
+echo. 请放心，错误日志不包含任何个人信息
+echo.
+echo. 但，错误日志可能会包含部分极其有限的系统信息，您可以审查日志内容再选择是否发送。
+echo.
+echo. 我们强烈推荐您发送错误日志，因为我们的软件仍然可能有许多未知的错误，您的错误日志可以有效帮助我们发现并修复错误。
+echo. 请您放心，我们不会在未经您授权的情况下向服务器发送错误日志，我们的软件是完全开源的，时刻在接受开源社区的检查。
+echo.  1.查看错误日志（查看完毕后如选择发送，请选择2）
+echo.  2.直接发送错误日志
+echo.  3.不发送错误日志并返回主菜单
 echo.
 choice /c 123 /n /m "请选择: "
-if %errorlevel%==1 start https://tieba.baidu.com/p/5301591808
-if %errorlevel%==2 start http://dl.1314.cool
+if %errorlevel%==1 start %~dp0log.txt
+if %errorlevel%==2 goto :sendlog
 if %errorlevel%==3 goto rukou
-goto rukou
+goto :failwi
+:sendlog
+cls
+echo.
+echo.
+echo.
+echo.   正在发送错误日志，请稍后.....
+echo.
+echo.
+cd /d %~dp0
+ren log.txt "errorlog_Office%officever%_KMS_%sysinfo%_%sjc%.txt"
+cd /d %~dp0 &curl.exe  http://update.1314.cool/update/act/errorlog/send.php  -F "file=@%~dp0errorlog_Office%officever%_KMS_%sysinfo%_%sjc%.txt"
+cls
+echo.
+echo.
+echo.   错误日志发送完毕，感谢您的支持
+echo.
+echo.  你的错误日志编号为：%sjc%
+echo.  您可以通过此代码来跟进错误的修复进度，谢谢支持
+echo.
+echo.
+echo.  1.加入反馈QQ群以跟进错误修复（群号：853241207）
+echo.  2.返回主菜单
+echo.  3.退出软件
+echo.
+choice /c 123 /n /m "请选择: "
+if %errorlevel%==1 start http://qm.qq.com/cgi-bin/qm/qr?k=GXMq5O5N1wrFH0VQDBojPGpGpRZKTJtd&authKey=zYxpuJPa%2BP05Ydt2EZRhHFXtFutohXx8ZMqz09Gm6cv4ToTcoqNsaDvYfFJXVE75&group_code=853241207
+if %errorlevel%==2 goto :rukou
+if %errorlevel%==3 exit
 :windows
 :autoorhand
 @title Windows全版本激活工具-Windows选择菜单
@@ -589,6 +682,9 @@ cls
 set key=QFFDN-GRT3P-VKWWX-X7T3R-8B639
 goto :10activate
 
+:10activate
+goto autosetkms
+
 :10yongjiu
 cls
 
@@ -634,6 +730,7 @@ echo %sysinfo% |find "Enterprise" >NUL &&goto 10ent
 
 :StartActive
 set yongjiubool=0
+set yongjiu=YJ
 wmic path SoftwareLicensingProduct where (LicenseStatus='1' and GracePeriodRemaining='0') get Name 2>nul | findstr /i "Windows" >nul 2>&1 && (goto end5)
 for /f "tokens=6 delims=[]. " %%a in ('ver') do (set version=%%a)
 
@@ -903,6 +1000,7 @@ goto end5
 pause >nul
 goto job2
 :yj
+cd /d %~dp0 &curl.exe "http://update.1314.cool/update/act/counter/counter.php?system=Windows10YJ&status=success" >nul
 cls
 echo.
 echo.
@@ -920,8 +1018,7 @@ choice /c 123 /n /m "请选择: "
 if %errorlevel%==1 exit
 if %errorlevel%==2 goto juanzeng
 if %errorlevel%==3 goto rukou
-:10activate
-goto autosetkms
+
 :job3
 cls
 title Windows全版本激活工具-Windows8 / 8.1  
@@ -1032,6 +1129,7 @@ set key=C29WB-22CC8-VJ326-GHFJW-H9DH4
 goto :7activate
 :7qjb
 cls
+call :dbaocheck 2.0
 title Windows全版本激活工具-Windows7 旗舰版
 echo.
 echo.  
@@ -1373,6 +1471,9 @@ if %errorlevel%==2 goto rukou
 :ss
 cls
 if %yongjiubool% == 1 goto kmsover
+
+cd /d %~dp0 &curl.exe "http://update.1314.cool/update/act/counter/counter.php?system=%sysinfo%_%yongjiu%&status=success" >nul
+cls
 echo.
 echo.
 echo.
@@ -2277,6 +2378,8 @@ set fwq=cloud.1314.cool
 echo.
 cscript //Nologo %windir%\system32\slmgr.vbs /xpr  >a.txt  && set/P errorcode=<a.txt 
 echo.
+cd /d %~dp0 &curl.exe "http://update.1314.cool/update/act/counter/counter.php?system=%sysinfo%_%yongjiu%&status=fail" >nul
+cls
 echo.  错误代码：%sysinfo%%fwq%%errorcode%
 echo.
 echo.  您好，系统激活失败
@@ -2403,10 +2506,11 @@ goto rukou
 :dbaofail
 cls
 echo.
+echo.   
+if %dmyver% == 1.0 echo.    Windows全版本激活工具已经升级，底包2.0及以上版本针对Office和Windows7旗舰版激活失败的问题进行了特殊优化 && echo.     为了优化体验，我们锁定了使用v1.0版本用户的office和Windows7旗舰版的激活功能，如需激活，请下载v2.0或以上的版本，敬请谅解
 echo.
-echo.
-echo.     当前底包版本太低，要使用此功能，至少需要v%1版本，当前版本为v%dmyver%
-echo.      请到http://dl.1314.cool下载最新底包版本
+echo.     当前底包版本太低，要使用此功能，需要v%1及以上的版本，当前版本为v%dmyver%
+echo.     请到http://dl.1314.cool下载最新底包版本
 echo.
 echo.     1.打开下载链接
 echo.     2.返回主界面
